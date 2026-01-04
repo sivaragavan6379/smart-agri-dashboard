@@ -2,58 +2,219 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Enter Your Name</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI IOT CROP YIELD PREDICTION</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    :root {
+      --nature-bg: linear-gradient(135deg, #064e3b 0%, #022c22 100%);
+      --card-glass: rgba(255, 255, 255, 0.08);
+      --primary-green: #4ade80;
+      --accent-blue: #38bdf8;
+      --danger-red: #fb7185;
+      --sun-gold: #fcd34d;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      height: 100vh;
-      justify-content: center;
-      align-items: center;
-      background: #f2f2f2;
-    }
-    .form-box {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-    input {
-      padding: 10px;
-      margin: 10px 0;
-      width: 200px;
-    }
-    button {
-      padding: 10px 20px;
-      cursor: pointer;
-      border: none;
-      background: #007BFF;
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--nature-bg);
+      background-attachment: fixed;
       color: white;
-      border-radius: 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
     }
-    button:hover {
-      background: #0056b3;
+
+    h1 { font-weight: 300; letter-spacing: 2px; margin-bottom: 30px; text-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: center; }
+    h1 span { color: var(--primary-green); font-weight: bold; }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      width: 100%;
+      max-width: 1200px;
     }
+
+    .box {
+      background: var(--card-glass);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 15px;
+      text-align: center;
+      backdrop-filter: blur(12px);
+    }
+
+    .label { color: #a7f3d0; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 1px; margin-bottom: 10px; display: block; }
+    .value { font-size: 1.5rem; font-weight: bold; }
+
+    /* Visuals */
+    .visual-area { height: 60px; display: flex; justify-content: center; align-items: center; font-size: 40px; }
+    
+    .tank { width: 40px; height: 60px; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; position: relative; overflow: hidden; background: rgba(0,0,0,0.2); }
+    .water-wave { position: absolute; bottom: 0; width: 100%; background: var(--accent-blue); transition: height 1s ease; }
+    
+    .btn-control {
+      margin-top: 10px; padding: 10px; border: none; border-radius: 10px;
+      font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s;
+    }
+    .btn-start { background: var(--primary-green); color: #064e3b; }
+    .btn-stop { background: var(--danger-red); color: white; }
+
+    .btn-download {
+      background: #10b981; color: white; border: none; padding: 10px 20px;
+      border-radius: 10px; cursor: pointer; margin-bottom: 20px; font-weight: bold;
+    }
+
+    /* Graphs Container */
+    .graphs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 30px;
+    }
+
+    .chart-box {
+      background: var(--card-glass);
+      border-radius: 20px;
+      padding: 15px;
+      height: 250px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .spin { animation: rotate 3s linear infinite; }
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <div class="form-box">
-    <h2>Enter Your Name</h2>
-    <form onsubmit="goToWelcome(event)">
-      <input type="text" id="name" placeholder="Your Name" required>
-      <br>
-      <button type="submit">Confirm</button>
-    </form>
+
+<h1>AI IOT <span>CROP YIELD PREDICTION</span></h1>
+
+<button class="btn-download" onclick="downloadCSV()">📊 DOWNLOAD HISTORY (CSV)</button>
+
+<div class="container">
+  <div class="box">
+    <span class="label">Soil Moisture</span>
+    <div class="visual-area">🌱</div>
+    <div class="value"><span id="soil">--</span>%</div>
   </div>
 
-  <script>
-    function goToWelcome(e) {
-      e.preventDefault();
-      let name = document.getElementById("name").value.trim().toLowerCase(); 
-      // convert to lowercase for matching
-      window.location.href = `welcome.html?name=${encodeURIComponent(name)}`;
-    }
-  </script>
+  <div class="box">
+    <span class="label">Temperature</span>
+    <div class="visual-area">🌡️</div>
+    <div class="value"><span id="temp">--</span>°C</div>
+  </div>
+
+  <div class="box">
+    <span class="label">Humidity</span>
+    <div class="visual-area">☁️</div>
+    <div class="value"><span id="hum">--</span>%</div>
+  </div>
+
+  <div class="box">
+    <span class="label">Sunlight</span>
+    <div class="visual-area" id="sunIcon">☀️</div>
+    <div class="value" id="sunStatus">--</div>
+  </div>
+
+  <div class="box">
+    <span class="label">Tank Level</span>
+    <div class="visual-area">
+      <div class="tank"><div class="water-wave" id="waterFill"></div></div>
+    </div>
+    <div class="value"><span id="water">--</span>%</div>
+  </div>
+
+  <div class="box">
+    <span class="label">Motor Status</span>
+    <div class="visual-area" id="motorIcon">⚙️</div>
+    <button id="motorBtn" class="btn-control btn-start" onclick="toggleMotor()">START</button>
+  </div>
+</div>
+
+<div class="graphs-grid">
+  <div class="chart-box"><span class="label">Water Level History</span><canvas id="chartWater"></canvas></div>
+  <div class="chart-box"><span class="label">Air Humidity History</span><canvas id="chartHum"></canvas></div>
+  <div class="chart-box"><span class="label">Soil Moisture History</span><canvas id="chartSoil"></canvas></div>
+</div>
+
+<script>
+  const token = "H9gk3Y1tJxJPNYqWe4Fdmj8oQOBwcwht";
+  const getURL = "https://blynk.cloud/external/api/get?token=" + token;
+  const updateURL = "https://blynk.cloud/external/api/update?token=" + token;
+
+  let motorCurrentState = 0;
+  let history = JSON.parse(localStorage.getItem('cropHistory')) || { labels:[], water:[], hum:[], soil:[] };
+
+  function createChart(id, label, color) {
+    return new Chart(document.getElementById(id), {
+      type: 'line',
+      data: { labels: history.labels, datasets: [{ label: label, data: [], borderColor: color, tension: 0.4, fill: true, backgroundColor: color + '22' }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100, ticks: { color: '#fff' } }, x: { display: false } } }
+    });
+  }
+
+  const wChart = createChart('chartWater', 'Water', '#38bdf8');
+  const hChart = createChart('chartHum', 'Humidity', '#4ade80');
+  const sChart = createChart('chartSoil', 'Soil', '#fbbf24');
+
+  async function updateDashboard() {
+    try {
+      const [v0, v1, v2, v3, v4, v5, v6] = await Promise.all([
+        fetch(getURL+"&v0").then(r=>r.text()), fetch(getURL+"&v1").then(r=>r.text()),
+        fetch(getURL+"&v2").then(r=>r.text()), fetch(getURL+"&v3").then(r=>r.text()),
+        fetch(getURL+"&v4").then(r=>r.text()), fetch(getURL+"&v5").then(r=>r.text()),
+        fetch(getURL+"&v6").then(r=>r.text())
+      ]);
+
+      document.getElementById('soil').innerText = v0;
+      document.getElementById('temp').innerText = v1;
+      document.getElementById('hum').innerText = v2;
+      document.getElementById('water').innerText = v5;
+      document.getElementById('waterFill').style.height = v5 + "%";
+
+      const isLight = v3 > 0;
+      document.getElementById('sunIcon').innerText = isLight ? "☀️" : "🌙";
+      document.getElementById('sunStatus').innerText = isLight ? "BRIGHT" : "DARK";
+
+      motorCurrentState = parseInt(v6);
+      const btn = document.getElementById('motorBtn');
+      document.getElementById('motorIcon').className = motorCurrentState ? "visual-area spin" : "visual-area";
+      btn.innerText = motorCurrentState ? "STOP MOTOR" : "START MOTOR";
+      btn.className = motorCurrentState ? "btn-control btn-stop" : "btn-control btn-start";
+
+      const time = new Date().toLocaleTimeString();
+      history.labels.push(time);
+      history.water.push(v5); history.hum.push(v2); history.soil.push(v0);
+
+      if(history.labels.length > 30) { history.labels.shift(); history.water.shift(); history.hum.shift(); history.soil.shift(); }
+      localStorage.setItem('cropHistory', JSON.stringify(history));
+
+      wChart.data.datasets[0].data = history.water; wChart.update();
+      hChart.data.datasets[0].data = history.hum; hChart.update();
+      sChart.data.datasets[0].data = history.soil; sChart.update();
+    } catch (e) {}
+  }
+
+  function downloadCSV() {
+    let csv = "Time,Water Level,Humidity,Soil Moisture\n";
+    history.labels.forEach((l, i) => { csv += `${l},${history.water[i]},${history.hum[i]},${history.soil[i]}\n`; });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'farm_history.csv');
+    a.click();
+  }
+
+  function toggleMotor() { fetch(updateURL + "&v6=" + (motorCurrentState === 1 ? 0 : 1)).then(() => updateDashboard()); }
+  setInterval(updateDashboard, 5000);
+  updateDashboard();
+</script>
 </body>
 </html>
